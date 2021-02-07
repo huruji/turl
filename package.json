@@ -1,0 +1,71 @@
+{
+  "name": "turl",
+  "version": "1.0.0",
+  "description": "thrift + curl = turl",
+  "main": "dist/index.js",
+  "bin": {
+    "turl": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc --project .",
+    "dev": "tsc --project . -w",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/huruji/turl.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/huruji/turl/issues"
+  },
+  "homepage": "https://github.com/huruji/turl#readme",
+  "devDependencies": {
+    "@commitlint/cli": "^7.5.2",
+    "@commitlint/config-conventional": "^7.5.0",
+    "@types/cosmiconfig": "^6.0.0",
+    "@types/node": "^14.14.25",
+    "@typescript-eslint/eslint-plugin": "^2.8.0",
+    "@typescript-eslint/parser": "^2.8.0",
+    "babel-eslint": "^10.0.1",
+    "eslint": "^6.6.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-config-prettier": "^6.7.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-import-resolver-alias": "^1.1.2",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jsx-a11y": "^6.1.2",
+    "eslint-plugin-node": "^10.0.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-react": "^7.11.1",
+    "eslint-plugin-vue": "^5.2.2",
+    "husky": "^1.2.1",
+    "lerna": "^3.8.0",
+    "lint-staged": "^8.1.5",
+    "thrift-parser": "^0.4.2",
+    "ts-node": "^9.1.1",
+    "typescript": "^3.7.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "npm test",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "git add"
+    ]
+  },
+  "dependencies": {
+    "assign-deep": "^1.0.1",
+    "commander": "^7.0.0",
+    "cosmiconfig": "^7.0.0",
+    "v8-compile-cache": "^2.2.0"
+  }
+}

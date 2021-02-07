@@ -1,0 +1,49 @@
+{
+  "root": true,
+  "extends": [
+    "plugin:@typescript-eslint/recommended",
+    "prettier",
+    "prettier/@typescript-eslint"
+  ],
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "env": {
+    "es6": true,
+    "browser": true,
+    "node": true,
+    "jest": true
+  },
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "sourceType": "module",
+    "project": "./tsconfig.json"
+  },
+  "rules": {
+    "semi": [
+      2,
+      "never",
+      {
+        "beforeStatementContinuationChars": "always"
+      }
+    ],
+    "max-len": [
+      2,
+      {
+        "code": 500
+      }
+    ]
+  },
+  "settings": {
+    "import/resolver": {
+      "alias": {
+        "extensions": [
+          ".js",
+          ".jsx",
+          ".json",
+          ".vue"
+        ]
+      }
+    }
+  }
+}
