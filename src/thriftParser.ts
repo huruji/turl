@@ -1,7 +1,16 @@
+import { ThriftInfo } from './thriftParser'
 import * as fs from 'fs'
 import thriftParser from 'thrift-parser'
 
-function buildThriftInfo(thriftAst) {
+export interface ThriftInfo {
+  serviceName: string
+  functionNames: string[]
+  functions: any
+  structs: any
+  enums:any
+}
+
+function buildThriftInfo(thriftAst: Record<string, any>) :ThriftInfo {
 
   const serviceName = Object.keys(thriftAst.service)[0];
   const functions = thriftAst.service[serviceName].functions;
@@ -59,8 +68,10 @@ function validate(thriftInfo) {
   });
 }
 
-module.exports = (filename: string) => {
+const parser = (filename: string) => {
   const thriftInfo = buildThriftInfo(thriftParser(fs.readFileSync(filename)));
   validate(thriftInfo);
   return thriftInfo;
 };
+
+export default parser

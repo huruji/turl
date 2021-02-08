@@ -12,11 +12,11 @@
   ],
   "compilerOptions": {
     "outDir": "./dist/",
-    "rootDir": "./",
+    "rootDir": "./src",
     "sourceMap": true,
     "noImplicitAny": true,
     "module": "commonjs",
-    "target": "esnext",
+    "target": "es5",
     "noEmit": false,
     "resolveJsonModule": true,
     "moduleResolution": "node",
