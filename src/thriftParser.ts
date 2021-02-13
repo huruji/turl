@@ -1,4 +1,3 @@
-import { ThriftInfo } from './thriftParser'
 import * as fs from 'fs'
 import thriftParser from 'thrift-parser'
 
@@ -11,7 +10,6 @@ export interface ThriftInfo {
 }
 
 function buildThriftInfo(thriftAst: Record<string, any>) :ThriftInfo {
-
   const serviceName = Object.keys(thriftAst.service)[0];
   const functions = thriftAst.service[serviceName].functions;
   const functionNames = Object.keys(functions);

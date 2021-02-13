@@ -16,7 +16,6 @@ class Engine {
   constructor(opt: TurlCliOpt) {
     this.handleCliOpts(opt)
     this.config = getConfig(this.config)
-    this.findEntry(this.config)
     this.thriftGenFolder = 'gen-nodejs'
     if (!this.config.idl) {
       throw new Error('a thrift idl file is needed')
@@ -59,7 +58,6 @@ class Engine {
 
   parseIdl():void {
     const thriftInfo = thriftParser(this.config.idl!)
-    debugger;
     this.thriftInfo = thriftInfo
     const existMethod = this.thriftInfo.functionNames.includes(this.config?.method!)
     if (!existMethod) {

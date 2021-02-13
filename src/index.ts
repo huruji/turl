@@ -20,12 +20,24 @@ program.usage("")
 .option('--args <args>')
 .action(async (opt: TurlCliOpt & TurlSimpleCliOpt) => {
   const options: TurlCliOpt = {}
-  options.host = opt.host || opt.h
-  options.port = opt.port || opt.p
-  options.idl = opt.idl || opt.i
-  options.args = opt.args || opt.a
-  options.method = opt.method || opt.m
-  options.service = opt.service || opt.s
+  if (opt.host || opt.h) {
+    options.host = opt.host || opt.h
+  }
+  if (opt.port || opt.p) {
+    options.port = opt.port || opt.p
+  }
+  if (opt.idl || opt.i) {
+    options.idl = opt.idl || opt.i
+  }
+  if(opt.args || opt.a) {
+    options.args = opt.args || opt.a
+  }
+  if (opt.method || opt.m) {
+    options.method = opt.method || opt.m
+  }
+  if (opt.service || opt.s) {
+    options.service = opt.service || opt.s
+  }
   const turl = new Engine(options)
   await turl.run()
 })
