@@ -1,12 +1,18 @@
 import * as fs from 'fs'
-import { ThriftInfo } from './thriftParser'
+import * as path from 'path'
+import { ThriftInfo, ServiceInfo } from './thriftParser'
 
 class ClientGenerator {
-  thriftInfo: ThriftInfo
+  thriftInfo: ThriftInfo[]
   srcDir: string
   output: fs.WriteStream
   genFolder: string
-  constructor(thriftInfo: ThriftInfo, srcDir: string, genFolder: string) {
+
+  static getClientName(serviceName: string) {
+    return `${serviceName}Client`
+  }
+
+  constructor(thriftInfo: ThriftInfo[], srcDir: string, genFolder: string) {
     this.thriftInfo = thriftInfo;
     this.srcDir = srcDir
     this.genFolder = genFolder
@@ -16,14 +22,21 @@ class ClientGenerator {
   generate() {
     this._writePackageRequires();
     this._writeClientRequires();
-    this._writeClient();
-    this.thriftInfo?.functionNames.forEach(name => {
-      this._writeCall(this.thriftInfo.functions[name]);
+    this.thriftInfo.forEach(info => {
+      for (const [serviceName, service] of Object.entries(info.service || {})) {
+        this._writeClient(serviceName);
+        service?.functionNames.forEach(name => {
+          this._writeCall(service.functions[name], info);
+        });
+        this._writeExport(serviceName)
+      }
     });
-
-    this._writeExport();
+    // this._writeExport();
   }
 
+  // _writeServiceClient(serviceName: string, service: ServiceInfo) {
+  //   this._writeClient()
+  // }
   _stripJsExt(file:string) {
     return file.replace('.js', '');
   }
@@ -51,16 +64,17 @@ const Promise = require(\'bluebird\');
   _writeClientRequires() {
     this._getClientFilesList().forEach(file => {
       if (this._isTypesFile(file)) {
-        this._writeRequire('ttypes', file);
+        this._writeRequire(`${path.basename(file, '.js')}`, file);
       } else {
-        this._writeRequire('Service', file);
+        this._writeRequire(`${path.basename(file, '.js')}_Service`, file);
       }
     });
   }
 
-  _writeClient() {
+  _writeClient(serviceName: string) {
+    const clientName = ClientGenerator.getClientName(serviceName)
     this.output.write(`
-class Client {
+class ${clientName} {
   constructor(serviceUrl, port) {
     const connection = thrift.createConnection(serviceUrl, port, {
       transport : thrift.TBufferedTransport,
@@ -72,20 +86,21 @@ class Client {
       console.log('server connection err: ', err)
     });
 
-    this.client = Promise.promisifyAll(thrift.createClient(Service, connection));
+    this.client = Promise.promisifyAll(thrift.createClient(${serviceName}_Service, connection));
   }`
     );
   }
 
-  getRequestPrams(tFunc:any) {
+  getRequestPrams(tFunc:any, info: ThriftInfo) {
     if (tFunc.args.length === 0) {
       return ''
     }
     let requestParam = ''
+
     for (let i = 0; i < tFunc.args.length; i++) {
       const arg = tFunc.args[i];
-      const enumType = this.thriftInfo.enums[arg?.type];
-      const structType = this.thriftInfo.structs[arg?.type];
+      const enumType = info?.enums[arg?.type];
+      const structType = info?.structs[arg?.type];
       if (arg.type === 'string' || arg.type === 'bool') {
         requestParam += `args[${i}], `;
       } else if (arg.type === 'i64' || arg.type === 'i32' || arg.type === 'i16' || enumType) {
@@ -97,8 +112,8 @@ class Client {
     return requestParam
   }
 
-  _writeCall(tFunc:any) {
-    const requestParam = this.getRequestPrams(tFunc)
+  _writeCall(tFunc:any, info: ThriftInfo) {
+    const requestParam = this.getRequestPrams(tFunc, info)
     this.output.write(`
     ${tFunc.name}(...args) {
 `
@@ -113,12 +128,12 @@ class Client {
     )
   }
 
-  _writeExport() {
+  _writeExport(serviceName: string) {
+    const clientName = ClientGenerator.getClientName(serviceName)
     this.output.write(
 `
 }
-
-module.exports = Client;
+module.exports.${clientName} = ${clientName}
 `
     );
   }

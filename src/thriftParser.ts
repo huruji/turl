@@ -1,27 +1,40 @@
 import * as fs from 'fs'
+import * as path from 'path'
 import thriftParser from 'thrift-parser'
 
-export interface ThriftInfo {
-  serviceName: string
+export interface ServiceInfo {
+  functions: Record<string, any>
   functionNames: string[]
-  functions: any
-  structs: any
-  enums:any
+  name: string
+}
+export interface ThriftInfo {
+  service?: Record<string, ServiceInfo>
+  serviceNames?: string[]
+  structs?: any
+  enums?:any
+  file?: string
+  include?: Record<string, {path: string}>
 }
 
-function buildThriftInfo(thriftAst: Record<string, any>) :ThriftInfo {
-  const serviceName = Object.keys(thriftAst.service)[0];
-  const functions = thriftAst.service[serviceName].functions;
-  const functionNames = Object.keys(functions);
+function buildThriftInfo(thriftAst: Record<string, any>, file: string) :ThriftInfo {
+  const service:ThriftInfo['service'] = {}
+  for (const [key, value] of Object.entries(thriftAst.service || {})) {
+    service[key] = {}
+    service[key].functions = value.functions
+    service[key].functionNames = Object.keys(value.functions)
+    service[key].name = key
+  }
+  const serviceNames = Object.keys(thriftAst.service)
   const structs = thriftAst.struct;
   const enums = buildDetailedEnumInfo(thriftAst.enum)
 
   return {
-    serviceName,
-    functionNames,
-    functions,
+    service,
+    serviceNames,
     structs,
-    enums
+    enums,
+    file,
+    include: thriftAst.include
   };
 }
 
@@ -50,7 +63,26 @@ function buildDetailedEnumInfo(enums: Record<string, any>) {
     };
   };
 
-  return Object.assign({}, ...Object.keys(enums).map(calcEnumValues));
+  return Object.assign({}, ...Object.keys(enums || {}).map(calcEnumValues));
+}
+
+function getSingleThriftInfo(res: ThriftInfo[], file: string) {
+  const thriftInfo = buildThriftInfo(thriftParser(fs.readFileSync(file)), file);
+  res.push(thriftInfo)
+  for (const [key, val] of Object.entries(thriftInfo.include || {})) {
+    const idlFile = path.resolve(path.dirname(file), val.path)
+    const existedIdl = res.map(info => info.file).includes(idlFile)
+    if (fs.existsSync(idlFile) && !existedIdl) {
+      getSingleThriftInfo(res, idlFile)
+    }
+  }
+  return res
+}
+
+function getAllThriftInfo(file: string) {
+  const thriftInfo: ThriftInfo[] = []
+  getSingleThriftInfo(thriftInfo, file)
+  return thriftInfo
 }
 
 function validate(thriftInfo) {
@@ -67,8 +99,8 @@ function validate(thriftInfo) {
 }
 
 const parser = (filename: string) => {
-  const thriftInfo = buildThriftInfo(thriftParser(fs.readFileSync(filename)));
-  validate(thriftInfo);
+  const thriftInfo = getAllThriftInfo(filename)
+
   return thriftInfo;
 };
 

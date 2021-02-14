@@ -10,7 +10,7 @@ import MethodGenerator from './methodGenerator'
 
 class Engine {
   config: TurlCliOpt
-  thriftInfo: ThriftInfo
+  thriftInfo: ThriftInfo[]
   sourceDir: string
   thriftGenFolder: string
   constructor(opt: TurlCliOpt) {
@@ -31,6 +31,12 @@ class Engine {
     this.applyPlugins()
   }
 
+  async run(): Promise<void> {
+    this.generateNodeJsClient()
+    this.generateClient()
+    this.generateMethod()
+  }
+
   generateNodeJsClient() {
     const dest = path.resolve(__dirname, 'turl_gen')
     this.sourceDir = dest
@@ -46,23 +52,59 @@ class Engine {
   }
 
   generateMethod() {
-    const generator = new MethodGenerator(this.config?.method!, this.sourceDir, this.config)
+    const serviceNames = this.thriftInfo.reduce((acc, info) => {
+      acc = acc.concat(info.serviceNames || [])
+      return acc
+    }, [] as string[])
+    let serviceName = ''
+    if (this.config.service) {
+      serviceName = serviceNames.find(s => s.toLowerCase() === this.config.service?.trim().toLowerCase()) || ''
+    } else {
+    }
+    const generator = new MethodGenerator(this.config?.method!, this.config?.service!, this.sourceDir, this.config)
     generator.generate()
-  }
-
-  async run(): Promise<void> {
-    this.generateNodeJsClient()
-    this.generateClient()
-    this.generateMethod()
   }
 
   parseIdl():void {
     const thriftInfo = thriftParser(this.config.idl!)
     this.thriftInfo = thriftInfo
-    const existMethod = this.thriftInfo.functionNames.includes(this.config?.method!)
+    const existMethod = this.thriftInfo.reduce((acc, info) => {
+      for (const [, val] of Object.entries(info.service || {})) {
+        acc = acc.concat(val.functionNames || [])
+      }
+      return acc
+    }, [] as string[]).includes(this.config?.method!)
     if (!existMethod) {
       throw new Error(`method ${this.config?.method} is not exist in idl file`)
     }
+    let serviceName = ''
+    if (this.config.service) {
+      const serviceNames = this.thriftInfo.reduce((acc, info) => {
+        acc = acc.concat(info.serviceNames || [])
+        return acc
+      }, [] as string[])
+      serviceName = serviceNames.find(s => s.toLowerCase() === this.config.service?.trim().toLowerCase()) || ''
+      if (!serviceName) {
+        throw new Error(`service ${this.config.service} is not existed in idl file`)
+      }
+      this.config.service = serviceName
+    } else {
+      for (let i = 0; i < this.thriftInfo.length; i++) {
+        const info = this.thriftInfo[i];
+        for (const [, service] of Object.entries(info?.service ?? {})) {
+          if (service.functionNames.includes(this.config?.method ?? '')) {
+            serviceName = service.name
+          }
+          if (serviceName) {
+            break
+          }
+        }
+        if(serviceName) {
+          break
+        }
+      }
+    }
+    this.config.service = serviceName
   }
 
   initPlugins(): void {

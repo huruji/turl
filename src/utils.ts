@@ -15,8 +15,6 @@ export const getConfig = (cliConfig): TurlCliOpt => {
   let result
   if (cliConfig.configFile) result = explorer.load(cliConfig.configFile)
   else result = explorer.search()
-  console.log('result')
-  console.log(result)
   if (result && result.config) {
     config = assign(config, result.config)
   }
