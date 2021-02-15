@@ -6,11 +6,13 @@ class MethodGenerator {
   config: TurlCliOpt
   output: fs.WriteStream
   service: string
+  filePath: string
   constructor(method: string, service: string, srcDir: string, config: TurlCliOpt) {
     this.method = method
     this.config = config
     this.service = service
-    this.output = fs.createWriteStream(`${srcDir}/${method}-method.js`);
+    this.filePath = `${srcDir}/${method}-method.js`
+    this.output = fs.createWriteStream(this.filePath);
   }
 
   generate() {

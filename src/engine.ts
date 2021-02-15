@@ -13,6 +13,7 @@ class Engine {
   thriftInfo: ThriftInfo[]
   sourceDir: string
   thriftGenFolder: string
+  methodFilePath: string
   constructor(opt: TurlCliOpt) {
     this.handleCliOpts(opt)
     this.config = getConfig(this.config)
@@ -32,9 +33,18 @@ class Engine {
   }
 
   async run(): Promise<void> {
-    this.generateNodeJsClient()
-    this.generateClient()
-    this.generateMethod()
+    try{
+      this.generateNodeJsClient()
+      this.generateClient()
+      this.generateMethod()
+      this.runThritClient()
+    } catch(err) {
+      console.log(err)
+    }
+  }
+
+  async runThritClient() {
+    cp.fork(this.methodFilePath, [], {});
   }
 
   generateNodeJsClient() {
@@ -52,17 +62,9 @@ class Engine {
   }
 
   generateMethod() {
-    const serviceNames = this.thriftInfo.reduce((acc, info) => {
-      acc = acc.concat(info.serviceNames || [])
-      return acc
-    }, [] as string[])
-    let serviceName = ''
-    if (this.config.service) {
-      serviceName = serviceNames.find(s => s.toLowerCase() === this.config.service?.trim().toLowerCase()) || ''
-    } else {
-    }
     const generator = new MethodGenerator(this.config?.method!, this.config?.service!, this.sourceDir, this.config)
     generator.generate()
+    this.methodFilePath = generator.filePath
   }
 
   parseIdl():void {
