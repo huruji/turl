@@ -1,4 +1,4 @@
-#!/usr/bin/env node --max_old_space_size=4096 --inspect-brk
+#!/usr/bin/env node --max_old_space_size=4096
 
 import('v8-compile-cache')
 import program from 'commander'

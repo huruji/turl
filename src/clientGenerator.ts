@@ -101,8 +101,10 @@ class ${clientName} {
       const arg = tFunc.args[i];
       const enumType = info?.enums[arg?.type];
       const structType = info?.structs[arg?.type];
-      if (arg.type === 'string' || arg.type === 'bool') {
-        requestParam += `args[${i}], `;
+      if (arg.type === 'string') {
+        requestParam += `args[${i}] + '', `;
+      } else if (arg.type === 'bool') {
+        requestParam += `!!args[${i}], `;
       } else if (arg.type === 'i64' || arg.type === 'i32' || arg.type === 'i16' || enumType) {
         requestParam += `parseInt(args[${i}]), `;
       } else if (structType) {
