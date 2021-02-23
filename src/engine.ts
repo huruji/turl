@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as cp from 'child_process'
+import ora from 'ora'
 import { pick, getConfig } from './utils'
 import thriftParser from './thriftParser'
 import { ThriftInfo } from './thriftParser'
@@ -14,6 +15,7 @@ class Engine {
   sourceDir: string
   thriftGenFolder: string
   methodFilePath: string
+  spinner: ora.Ora
   constructor(opt: TurlCliOpt) {
     this.handleCliOpts(opt)
     this.config = getConfig(this.config)
@@ -24,9 +26,9 @@ class Engine {
     if (!this.config.method) {
       throw new Error('a rpc method is needed')
     }
-    if (!this.config){
-
-    }
+    // this.spinner = ora('parsing idl file')
+    // this.spinner.prefixText = 'turl:'
+    // this.spinner.start()
     this.parseIdl()
     this.initPlugins()
     this.applyPlugins()
@@ -48,6 +50,7 @@ class Engine {
   }
 
   generateNodeJsClient() {
+    // this.spinner.text = 'generate client from idl file'
     const dest = path.resolve(__dirname, 'turl_gen')
     this.sourceDir = dest
     if(!fs.existsSync(dest)) {
@@ -57,11 +60,14 @@ class Engine {
   }
 
   generateClient() {
+    // this.spinner.text = "generate thrift client"
     const generator = new ClientGenerator(this.thriftInfo, this.sourceDir, this.thriftGenFolder)
     generator.generate()
+    // this.spinner.stop()
   }
 
   generateMethod() {
+    // this.spinner.text = 'generate thrift method'
     const generator = new MethodGenerator(this.config?.method!, this.config?.service!, this.sourceDir, this.config)
     generator.generate()
     this.methodFilePath = generator.filePath
