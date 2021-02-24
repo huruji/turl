@@ -64,7 +64,7 @@ const Promise = require(\'bluebird\');
   _writeClientRequires() {
     this._getClientFilesList().forEach(file => {
       if (this._isTypesFile(file)) {
-        this._writeRequire(`${path.basename(file, '.js')}`, file);
+        this._writeRequire(`${path.basename(file, '.js')}_Types`, file);
       } else {
         this._writeRequire(`${path.basename(file, '.js')}_Service`, file);
       }
@@ -108,7 +108,7 @@ class ${clientName} {
       } else if (arg.type === 'i64' || arg.type === 'i32' || arg.type === 'i16' || enumType) {
         requestParam += `parseInt(args[${i}]), `;
       } else if (structType) {
-        requestParam += `new ttypes.${arg.type}(args[${i}]), `
+        requestParam += `new ${path.basename(info.file!, '.thrift')}_types_Types.${arg.type}(args[${i}]), `
       }
     }
     return requestParam
