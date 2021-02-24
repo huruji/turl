@@ -23,5 +23,8 @@ export const getConfig = (cliConfig): TurlCliOpt => {
   if (config.idl && !path.isAbsolute(config.idl)) {
     config.idl = path.resolve(process.cwd(), config.idl)
   }
+  if (config.vaseDir && !path.isAbsolute(config.vaseDir)) {
+    config.vaseDir = path.resolve(process.cwd(), config.vaseDir)
+  }
   return config
 }

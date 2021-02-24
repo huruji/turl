@@ -14,7 +14,7 @@
     "outDir": "./dist/",
     "rootDir": "./src",
     "sourceMap": true,
-    "noImplicitAny": true,
+    "noImplicitAny": false,
     "module": "commonjs",
     "target": "es5",
     "noEmit": false,
@@ -31,6 +31,12 @@
       "es7",
       "dom",
       "dom.iterable"
+    ],
+    "typeRoots": [
+      "node",
+      "node_modules/@types",
+      "typings",
+      "src/typings"
     ]
   },
   "include": [

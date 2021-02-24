@@ -39,6 +39,7 @@ const cli = (program: CommanderStatic): void => {
         options.service = opt.service || opt.s;
       }
       const turl = new Engine(options);
+      turl.readyPing()
       await turl.run();
     });
 };

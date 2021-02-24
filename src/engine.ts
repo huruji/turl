@@ -7,6 +7,10 @@ import thriftParser from './thriftParser'
 import { ThriftInfo } from './thriftParser'
 import ClientGenerator from './clientGenerator'
 import MethodGenerator from './methodGenerator'
+import Vase from './vase/index'
+import logger from './util/logger'
+import chalk from 'chalk'
+import * as jsonfile from 'jsonfile'
 
 
 class Engine {
@@ -20,18 +24,32 @@ class Engine {
     this.handleCliOpts(opt)
     this.config = getConfig(this.config)
     this.thriftGenFolder = 'gen-nodejs'
+    // this.spinner = ora('parsing idl file')
+    // this.spinner.prefixText = 'turl:'
+    // this.spinner.start()
+    this.initPlugins()
+    this.applyPlugins()
+  }
+
+  readyPing() {
     if (!this.config.idl) {
       throw new Error('a thrift idl file is needed')
     }
     if (!this.config.method) {
       throw new Error('a rpc method is needed')
     }
-    // this.spinner = ora('parsing idl file')
-    // this.spinner.prefixText = 'turl:'
-    // this.spinner.start()
     this.parseIdl()
-    this.initPlugins()
-    this.applyPlugins()
+    this.getArgs()
+  }
+
+  async buildVase() {
+    debugger;
+    const vaseInstance = new Vase({
+      idlDir: path.dirname(this.config.idl!),
+      dir: this.config.vaseDir!
+    })
+    await vaseInstance.build()
+    logger.info(`vase files created at ${chalk.cyan(this.config.vaseDir)}`);
   }
 
   async run(): Promise<void> {
@@ -115,6 +133,52 @@ class Engine {
     this.config.service = serviceName
   }
 
+  getArgs():void {
+    const { method, args, service } = this.config
+    let serviceName = service
+    const needValidateService = !!service
+    const thriftInfo = this.thriftInfo
+    let func: { args: {type: string, name: string}[] } | null= null
+    for (let i = 0; i < this.thriftInfo.length; i++) {
+      const info = this.thriftInfo[i];
+      for (const [key, serviceInfo] of Object.entries(info.service || {})) {
+        let isThisService = true
+        if (needValidateService && key !== service) {
+          isThisService = false
+        }
+        if (isThisService && serviceInfo.functions[method!]) {
+          serviceName = key
+          func = serviceInfo.functions[method!]
+        }
+      }
+    }
+    if (!func || func?.args?.length === 0) {
+      return
+    }
+    let jsonPath = path.resolve(this.config.vaseDir!, `${serviceName}/${method}.json`)
+    if (!fs.existsSync(jsonPath)) {
+      return
+    }
+    const argJson = jsonfile.readFileSync(jsonPath)
+
+    let methodArgs = ''
+    for (let i = 0; i < func.args.length; i++) {
+      const arg = func.args[i]
+      const param = argJson[arg.name]
+      if(!Object.keys(argJson || {}).includes(arg.name)) {
+        methodArgs += ', '
+      } else {
+        if (typeof param === 'string') {
+          methodArgs += `"${param}", `
+        } else if(typeof param === 'object') {
+          methodArgs += `${JSON.stringify(param)}, `
+        } else {
+          methodArgs += `${param}, `
+        }
+      }
+    }
+    this.config.args = methodArgs
+  }
   initPlugins(): void {
 
   }

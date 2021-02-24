@@ -1,5 +1,5 @@
 import { CommanderStatic } from 'commander'
-import generateConfigFile from '../util/generate-config-file'
+import generateConfigFile from '../util/generateConfigFile'
 import type { CmdPlugin } from './'
 
 const cli = (program: CommanderStatic): void => {

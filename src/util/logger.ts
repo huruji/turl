@@ -1,4 +1,4 @@
-import * as chalk from 'chalk'
+import chalk from 'chalk'
 
 const logger = {
   log(prefix: string, ...args: string[]) {
@@ -8,6 +8,7 @@ const logger = {
     console.log.apply(console, [prefix, ...args]);
   },
   info(...args: string[]) {
+    debugger;
     const prefix = chalk.green('[INFO]');
     logger.log(prefix, ...args);
   },
