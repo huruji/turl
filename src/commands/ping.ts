@@ -4,8 +4,8 @@ import type { CmdPlugin } from './';
 
 const cli = (program: CommanderStatic): void => {
   program
-    .usage("")
-    .command("ping")
+    .usage("test RPC API")
+    .command("ping [method]")
     .option('-h <host>')
     .option('--host <host>')
     .option('-p <port>')

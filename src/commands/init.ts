@@ -4,7 +4,7 @@ import type { CmdPlugin } from './'
 
 const cli = (program: CommanderStatic): void => {
   program
-    .usage('<commander> <usage>')
+    .usage('init a turl config file')
     .command('init')
     .description('init a turl config file')
     .action(() => {

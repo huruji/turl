@@ -4,7 +4,7 @@ import type { CmdPlugin } from './';
 
 const cli = (program: CommanderStatic): void => {
   program
-    .usage("")
+    .usage("generate vase file")
     .command("vase")
     .option('-i <idl>')
     .option('--idl <idl>')
